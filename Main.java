@@ -1,5 +1,6 @@
 public class Main {
     public static void main(String[] args) {
-        BlackjackGame bj = new BlackjackGame;
-    }
-}
+        BlackjackGame blackjack = new BlackjackGame();
+        blackjack.startGame();
+    }// Ends main()
+}// Ends Main
