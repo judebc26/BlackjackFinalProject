@@ -8,7 +8,6 @@ public class PlayerHand {
     private ArrayList<Card> dealerHand;
     private Random rand = new Random();
 
-    private int chips = rand.nextInt(347) + 20; //starting chips
 
 
     public PlayerHand() {
@@ -20,71 +19,86 @@ public class PlayerHand {
     private void hitOrStand(ArrayList <Card> varArray) {
         vaildResponse = false;
         //Split
-        if ((varArray.get(0).getRank()).equals(varArray.get(1).getRank())) { 
-            while (!validResponse) {
-                splitAsked = true;
-                System.out.println("You can: hit, stand, double down, or split.");
+        while (!validResponse) {
+            if ((varArray.get(0).getRank()).equals(varArray.get(1).getRank())) { 
+                while (!validResponse) {
+                    splitAsked = true;
+                    System.out.println("You can: hit, stand, double down, or split.");
+                    System.out.println("You choose to ");
+                    try {
+                        decision = playerInput.next();
+    
+                    if (decision.toLowerCase() == "split" && isBalanceEnough(currentBet*2)) {
+                        splitHappened = true;
+                        validResponse = true;
+                        split();
+                    }// End of if statement
+                    else if (decision.toLowerCase() == "split") {
+                        System.out.println("You would need $" + currentBet*2 - chips + " to split.");
+                    }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid answer, enter a valid amount.");
+                    }
+                }// End of while loop
+    
+            }// End of if statement for if a split occured
+                 //                         |                          //
+        // =============IF NO SPLIT V CODE OCCURS============ //
+        
+            if (splitAsked == false) {
+                System.out.println("You can: hit, stand, or double down.");
                 System.out.println("You choose to ");
-                try {
-                    decision = playerInput.next();
-
-                if (decision.toLowerCase() == "split" && isBalanceEnough(currentBet*2)) {
-                    splitHappened = true;
-                    split();
-                }// End of if statement
-                else if (decision.toLowerCase() == "split") {
-                    System.out.println("You would need $" + currentBet*2 - chips + " to split.");
-                }
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid answer, enter a valid amount.");
-                }
-            }// End of while loop
-
-        }// End of if statement for if a split occured
-        if (splitAsked == false) {
-
-            System.out.println("You can: hit, stand, or double down.");
-            System.out.println("You choose to ");
-            decision = playerInput.next();
-        }
-        if (splitHappened == false) {
-
-            if (decision.toLowerCase() == "stand") {
-                didWin();
-            } 
+                decision = playerInput.next();
+            }
+            if (splitHappened == false) {
+                if (decision.toLowerCase().equals("stand")) {
+                    didWin();
+                } 
             
-            else if (decision.toLowerCase() == "hit") {
-
+            else if (decision.toLowerCase().equals("hit")) {
                 varArray.add(deck.get(0));
                 deck.remove(0);
-
+                hitOrStand(varArray);
+            }// End of hit
+            
+            else if (decision.toLowerCase().equals("double down") && isBalanceEnough(currentBet*2)) {
+                varArray.add(deck.get(0));
+                deck.remove(0);
+                currentBet += currentBet;
             } 
+            else if (decision.toLowerCase().equals("double down") && !isBalanceEnough(currentBet*2)) {
+                System.out.println("You would need $" + currentBet-chips + " more to double down.");
+            }// End of double down
             
-            else if (decision.toLowerCase() == "double down" && isBalanceEnough(currentBet*2)) {
-                //double down here
+                else {
+                    System.out.println("Please enter a valid response");
+                    System.out.println();
+                }
             }
-            
-            else {
-                System.out.println("Please enter a valid response");
-                System.out.println();
-            }
-        }
+        }// End of validResponse while loop
     }
 //  =====================================================================================================
     private void bets() {
         int currentBet = 0;
         System.out.println("You have $" + chips);
-        System.out.print("What is your bet? $");
-        try {
-            Sring bet = playerInput.next();  // Read user input
-            currentBet = Integer.parseInt(bet);
-            if(isBalanceEnough(currentBet)){
-                System.out.println("You have $" + chips + " left.");
-            }// End of if statement
-        }// End of try() 
-        catch (NumberFormatException e) {
-            System.out.println("Invalid Bet, enter a valid amount.");
-        }// End of catch()
+        while (currentBet <= 0) {
+            System.out.print("What is your bet? $");
+                try {
+                    Sring bet = playerInput.next();  // Read user input
+                    currentBet = Integer.parseInt(bet);
+                    if(isBalanceEnough(currentBet) && currentBet > 0){
+                        System.out.println("You have $" + chips + " left.");
+                }// End of if statement
+                else if (currentBet <= 0) {
+                    System.out.println("Time is not on your side, you must bet.");
+                }
+            }// End of try() 
+            catch (NumberFormatException e) {
+                System.out.println("Invalid Bet, enter a valid amount.");
+                currentBet = 0;
+            }// End of catch()
+        }
+        
     }// End of bets()
 
     public boolean isBalanceEnough(int wager) {
