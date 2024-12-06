@@ -6,7 +6,7 @@ public class Deck {
 
     public ArrayList<Card> deck;
 
-    public deck() {
+    public Deck() {
         
         deck = new ArrayList<>();
         initializeDeck();

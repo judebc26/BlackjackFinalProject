@@ -3,21 +3,27 @@ import java.util.Collections;
 import java.util.Scanner;
 public class PlayerHand {
 
-    private ArrayList<Card> deck;
-    private ArrayList<Card> playerHand;
-    private ArrayList<Card> dealerHand;
+    public ArrayList<Card> playerHand;
     private Random rand = new Random();
-
+    public int numHands = 0;
 
 
     public PlayerHand() {
         
         playerHand = new ArrayList<>();
+        numHands += 1;
 
     }// End of PlayerHand()
 
     private void hitOrStand(ArrayList <Card> varArray) {
         vaildResponse = false;
+        splitHappened = false;
+        splitAsked = false;
+        ArrayList<Integer> handBets = new ArrayList<>();
+        int currentHandBet = currentBet;
+        handBets.add(currentHandBet);
+        
+
         //Split
         while (!validResponse) {
             if ((varArray.get(0).getRank()).equals(varArray.get(1).getRank())) { 
@@ -32,6 +38,7 @@ public class PlayerHand {
                         splitHappened = true;
                         validResponse = true;
                         split();
+                        handBets.add(currentHandBet);
                     }// End of if statement
                     else if (decision.toLowerCase() == "split") {
                         System.out.println("You would need $" + currentBet*2 - chips + " to split.");
@@ -45,12 +52,12 @@ public class PlayerHand {
                  //                         |                          //
         // =============IF NO SPLIT V CODE OCCURS============ //
         
-            if (splitAsked == false) {
+            if (!splitAsked) {
                 System.out.println("You can: hit, stand, or double down.");
                 System.out.println("You choose to ");
                 decision = playerInput.next();
             }
-            if (splitHappened == false) {
+            if (!splitHappened) {
                 if (decision.toLowerCase().equals("stand")) {
                     didWin();
                 } 
@@ -64,7 +71,7 @@ public class PlayerHand {
             else if (decision.toLowerCase().equals("double down") && isBalanceEnough(currentBet*2)) {
                 varArray.add(deck.get(0));
                 deck.remove(0);
-                currentBet += currentBet;
+                currentBet *= 2;
             } 
             else if (decision.toLowerCase().equals("double down") && !isBalanceEnough(currentBet*2)) {
                 System.out.println("You would need $" + currentBet-chips + " more to double down.");
@@ -75,8 +82,91 @@ public class PlayerHand {
                     System.out.println();
                 }
             }
+            if (splitHappened) {
+                for (int i = 0; i < numHands; i++) {
+                    System.out.println("Hand " + (i + 1) + " with bet $" + handBets.get(i));
+                    hitOrStandSplit(varArray);
+                    // Add additional handling for hit, stand, or double down for each hand
+                    // Make sure you call the appropriate methods based on each hand's state
+                }
+            }
         }// End of validResponse while loop
-    }
+    }// End of hitOrStand()
+
+    private void hitOrStandSplit(ArrayList <Card> varArray) {
+        vaildResponse = false;
+        splitHappened = false;
+        splitAsked = false;
+
+        //Split
+        while (!validResponse) {
+            if ((varArray.get(0).getRank()).equals(varArray.get(1).getRank())) { 
+                while (!validResponse) {
+                    splitAsked = true;
+                    System.out.println("You can: hit, stand, double down, or split.");
+                    System.out.println("You choose to ");
+                    try {
+                        decision = playerInput.next();
+    
+                    if (decision.toLowerCase() == "split" && isBalanceEnough(currentBet*2)) {
+                        splitHappened = true;
+                        validResponse = true;
+                        split();
+                        handBets.add(currentHandBet);
+                    }// End of if statement
+                    else if (decision.toLowerCase() == "split") {
+                        System.out.println("You would need $" + currentBet*2 - chips + " to split.");
+                    }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid answer, enter a valid amount.");
+                    }
+                }// End of while loop
+    
+            }// End of if statement for if a split occured
+                 //                         |                          //
+        // =============IF NO SPLIT V CODE OCCURS============ //
+        
+            if (!splitAsked) {
+                System.out.println("You can: hit, stand, or double down.");
+                System.out.println("You choose to ");
+                decision = playerInput.next();
+            }
+            if (!splitHappened) {
+                if (decision.toLowerCase().equals("stand")) {
+                    didWin();
+                } 
+            
+            else if (decision.toLowerCase().equals("hit")) {
+                varArray.add(deck.get(0));
+                deck.remove(0);
+                hitOrStand(varArray);
+            }// End of hit
+            
+            else if (decision.toLowerCase().equals("double down") && isBalanceEnough(currentBet*2)) {
+                varArray.add(deck.get(0));
+                deck.remove(0);
+                currentBet *= 2;
+            } 
+            else if (decision.toLowerCase().equals("double down") && !isBalanceEnough(currentBet*2)) {
+                System.out.println("You would need $" + currentBet-chips + " more to double down.");
+            }// End of double down
+            
+                else {
+                    System.out.println("Please enter a valid response");
+                    System.out.println();
+                }
+            }
+            if (splitHappened) {
+                for (int i = 0; i < numHands; i++) {
+                    System.out.println("Hand " + (i + 1) + " with bet $" + handBets.get(i));
+                    // Add additional handling for hit, stand, or double down for each hand
+                    // Make sure you call the appropriate methods based on each hand's state
+                }
+            }
+        }// End of validResponse while loop
+    }// End of hitOrStand()
+
+
 //  =====================================================================================================
     private void bets() {
         int currentBet = 0;
@@ -148,7 +238,7 @@ public class PlayerHand {
     private void split() {
         if (splitHasBeenDone) {
             preformSplit(2);
-            splitHasBeeDone = false;
+            splitHasBeenDone = false;
         }// End of if statement
         else {
             preformSplit(0);

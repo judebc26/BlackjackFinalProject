@@ -9,12 +9,11 @@ public class BlackjackGame {
     public Random rand = new Random();
     public int chips = 0;
 
-    private ArrayList<Card> playerHand;
-    private ArrayList<Card> dealerHand;
+    public ArrayList<Card> dealerHand;
 
     public BlackjackGame() {
 
-        deck();
+        Deck();
 
     }// BlackjackGame()
 
