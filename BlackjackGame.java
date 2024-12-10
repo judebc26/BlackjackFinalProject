@@ -4,321 +4,384 @@ import java.util.Random;
 
 public class BlackjackGame {
 
-    public Scanner playerInput = new Scanner(System.in);
+    // Core game components
+    private Scanner playerInput = new Scanner(System.in);
     private Random rand = new Random();
     private int chips = 0;
     private Deck deck;
     private boolean stillAlive = true, hasWon = false;
+    private double shortPauseLength = .1;// 1
+    private double mediumPauseLength = .15;// 1.5
+    private double longPauseLength = .2;// 2
 
+    // Constructor initializes the game deck
     public BlackjackGame() {
         deck = new Deck();
+        playerHand();
+        dealerHand();
     }
 
+    // Checks if the player has won the game
     private void didWin() {
-        if ()
-
-
-        // Placeholder for win logic
-        System.out.println("Win check logic here");
+        System.out.println();
+        System.out.println("     [Your Hand]");
+        for (int i = 0; i < playerHand.size(); i++) {
+            System.out.println(playerHand.get(i).getRank() + " of " + playerHand.get(i).getSuit());
+            pause(shortPauseLength);
+        }
+        System.out.println("Your hand total: " + handSum(playerHand));
+        pause(mediumPauseLength);
+        System.out.println();
+        pause(mediumPauseLength);
+        System.out.println("   [Dealers Hand]");
+        pause(shortPauseLength);
+        System.out.println();
+        for (int i = 0; i < dealerHand.size(); i++) {
+            System.out.println(dealerHand.get(i).getRank() + " of " + dealerHand.get(i).getSuit());
+            pause(shortPauseLength);
+        }
+        System.out.println();
+        pause(mediumPauseLength);
+        System.out.println("Dealer total: " + handSum(dealerHand));
+        pause(shortPauseLength);
+        System.out.println();
+        if (handSum(playerHand) > handSum(dealerHand) && (!(handSum(playerHand) > 21) || handSum(dealerHand) > 21)){
+            System.out.println("You won! By " + (handSum(playerHand) - handSum(dealerHand)));
+            System.out.println();
+            chips += currentBet;
+        } else if (handSum(playerHand) == handSum(dealerHand)) {
+            System.out.println("Dealer won the tie");
+            System.out.println();
+            chips -= currentBet;
+        } else if(handSum(playerHand) < handSum(dealerHand)) {
+            System.out.println("Dealer won. You lost by " + (handSum(dealerHand) - handSum(playerHand)));
+            System.out.println();
+            chips -= currentBet;
+        }
+        System.out.println();
     }
 
+    private int handSum(ArrayList<Card> hand) {
+        int sum = 0;
+        for (int i = 0; i < hand.size(); i++) {
+            sum += hand.get(i).cardValue();
+        }   if (sum > 21) {
+            for (int i = 0; i < hand.size(); i++) {
+                if (hand.get(i).getRank() == "Ace") {
+                    sum -= 10;
+                    i += 100;
+                }
+            }
+        }
+        return sum;
+    }
+
+    // Reads input from the player
     private String getInput() {
         return playerInput.next();
     }
 
+    // Starts the game and introduces the scenario
     public void startGame() {
-        chips = rand.nextInt(347) + 20;
+        chips = rand.nextInt(347) + 20; // Random initial chip amount
         System.out.println();
         System.out.println("===========================================");
+        pause(mediumPauseLength);
         System.out.println("        You owe the mafia $10,000");
-        System.out.println("    if you don't pay the debt by tonight,");
+        pause(mediumPauseLength);
+        System.out.println("    If you don't pay the debt by tonight,");
+        pause(mediumPauseLength);
         System.out.println("              you will die.");
-        System.out.println("            This is Blackjack");
+        pause(longPauseLength);
         System.out.println("     You only have $" + chips + " to your name.");
+        pause(mediumPauseLength);
         System.out.println("     Good luck, your life depends on it");
+        pause(mediumPauseLength);
         System.out.println("===========================================");
         System.out.println();
-        playerHand();
-        dealerHand();
-        dealCards();
+        pause(longPauseLength);
+        System.out.println("You approach the first blackjack table. . .");
+        pause(longPauseLength);
+        System.out.println("You sit down alone, it is just you and the dealer.");
+        pause(longPauseLength);
+        runGame();
     }
 
-    public void runGame() {
-        if (stillAlive && !hasWon) {
+    public void pause(double seconds) {
+        try {
+            Thread.sleep((long) (seconds*1000)); // Pause for 1 second
+        } catch (InterruptedException e) {  } 
+    }
+
+    // Main game loop
+    private void runGame() {
+        while (stillAlive && !hasWon) {
+            System.out.println();
+            System.out.println("The dealer shuffles the deck...");
+            pause(mediumPauseLength);
             deck.shuffleDeck();
+            System.out.println("The dealer deals the cards...");
+            pause(mediumPauseLength);
             dealCards();
+            System.out.println();
             bets();
-            playerHand();
-            dealerHand();
+            pause(longPauseLength);
+            showPlayerHand();
+            pause(longPauseLength);
+            showDealerHand();
+            System.out.println();
+            pause(longPauseLength);
             insurance();
-            hitOrStand(playerHand);
+            if (insurancePlaced) {
+                System.out.println();
+                pause(mediumPauseLength);
+            }
+            hitOrStand();
+            System.out.println();
+            pause(mediumPauseLength);
+            showDealerHand();
+            System.out.println();
+            pause(mediumPauseLength);
+            dealerHitOrStand();
+            System.out.println();
+            pause(mediumPauseLength);
             didWin();
-        }   if (!stillAlive) {
+            resetVars();
+            if (chips >= 10000) {
+                hasWon = true;
+            } else {
+                runGame();
+            }
+        } if (!stillAlive) {
+            System.out.println();
+            pause(mediumPauseLength);
             System.out.println("The mafia didn't get its money...");
-            System.out.println("You have died");
+            pause(longPauseLength);
+            System.out.println("You have died.");
         }   else {
-            System.out.println("You got enough money to pay off the mafia");
-            System.out.println("Want to play one more hand with that money?");
+                System.out.println();
+                pause(mediumPauseLength);
+                System.out.println("You got enough money to pay off the mafia. With $" + (chips - 10000) + " to spare.");
+                pause(longPauseLength);
+                System.out.println("Would you want to play one more hand with that money?");
+                try {
+                    String pushLuck = getInput();
+                    if (pushLuck.equals("yes")) {
+                        hasWon = false;
+                     runGame();
+                    } 
+                }   catch (Exception e) {
+
+                }
         }
     }
+    
 
-    public void dealCards() {
+    // Deals two cards each to the player and dealer
+    private void dealCards() {
         for (int i = 0; i < 2; i++) {
             playerHand.add(deck.drawCard());
             dealerHand.add(deck.drawCard());
         }
-        System.out.println();
-        System.out.println("The cards have been dealt");
     }
-// ===============Player=Hand===================================================
-    public ArrayList<Card> playerHand;
-    private int numHands = 0;
-    private boolean splitHappened = false;
-    private boolean splitAsked = false;
+
+    // Resets all variables in between hands
+    private void resetVars() {
+        currentBet = 0;
+        validResponse = false;
+        currentHandBet = 0;
+        insuranceBet = 0;
+        insurancePlaced = false;
+        handBets.clear();
+    }
+// ================================================================
+// PLAYER HAND LOGIC
+// ================================================================
+
+    private ArrayList<Card> playerHand;
     private int currentBet = 0;
     private boolean validResponse = false;
     private int currentHandBet = 0;
-    ArrayList<Integer> handBets;
+    private ArrayList<Integer> handBets;
 
-
-    public void playerHand() {
-        
+    // Initializes the player's hand
+    private void playerHand() {
         playerHand = new ArrayList<>();
-        numHands = 1;
+    }
 
-    }// End of PlayerHand()
+    // Prints the player's hand
+    private void showPlayerHand() {
+        System.out.println("     [Your hand]");
+        pause(shortPauseLength);
+        System.out.println(playerHand.get(0).getRank() + " of " + playerHand.get(0).getSuit());
+        pause(shortPauseLength);
+        System.out.println(playerHand.get(1).getRank() + " of " + playerHand.get(1).getSuit());
+        pause(shortPauseLength);
+        System.out.println("Total: " + handSum(playerHand));
+        pause(shortPauseLength);
+        System.out.println("");
 
-    private void hitOrStand(ArrayList <Card> varArray) {
-        splitHappened = false;
-        splitAsked = false;
-        handBets = new ArrayList<>();
-        currentHandBet = currentBet;
-        handBets.add(currentHandBet);
-        meatAndPotatoes(varArray, true); 
-    }// End of hitOrStand()
+    }
 
-    private void hitOrStandSplit(ArrayList <Card> varArray) {
-    
-        validResponse = false;
-        meatAndPotatoes(varArray, false);
-    }// End of hitOrStandSplit()
-    private void meatAndPotatoes(ArrayList <Card> varArray, boolean gravy) {
-        String decision = "";
+    // Handles the player's choice to hit or stand
+    private void hitOrStand() {
         while (!validResponse) {
-            if (varArray.size() == 2 && (varArray.get(0).getRank()).equals(varArray.get(1).getRank())) { 
-                while (!validResponse) {
-                    splitAsked = true;
-                    System.out.println("You can: hit, stand, double down, or split.");
-                    System.out.println("You choose to ");
-                    try {
-                        decision = getInput();
-    
-                    if (decision.toLowerCase() == "split" && isBalanceEnough(currentBet*2)) {
-                        splitHappened = true;
-                        validResponse = true;
-                        split();
-                        handBets.add(currentHandBet);
-                    }// End of if statement
-                    else if (decision.toLowerCase() == "split") {
-                        System.out.println("You would need $" + (currentBet*2 - chips) + " to split.");
-                    }
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid answer, enter a valid amount.");
-                    }
-                }// End of while loop
-    
-            }// End of if statement for if a split occured
-                 //                         |                          //
-        // =============IF NO SPLIT V CODE OCCURS============ //
-        
-            if (!splitAsked) {
-                System.out.println("You can: hit, stand, or double down.");
-                System.out.println("You choose to ");
-                decision = getInput();
-            }
-            if (!splitHappened) {
-                if (decision.toLowerCase().equals("stand")) {
-                    didWin();
-                } 
-            
-            else if (decision.toLowerCase().equals("hit")) {
-                varArray.add(deck.drawCard());
-                hitOrStand(varArray);
-            }// End of hit
-            
-            else if (decision.toLowerCase().equals("double down") && isBalanceEnough(currentBet*2)) {
-                varArray.add(deck.drawCard());
-                currentBet *= 2;
-            } 
-            else if (decision.toLowerCase().equals("double down") && !isBalanceEnough(currentBet*2)) {
-                System.out.println("You would need $" + (currentBet - chips) + " more to double down.");
-            }// End of double down
-            
-                else {
-                    System.out.println("Please enter a valid response");
+            System.out.println();
+            pause(shortPauseLength);
+            System.out.println("You can: hit, stand, or double down.");
+            pause(shortPauseLength);
+            System.out.print("You choose to: ");
+            String choice = getInput();
+            System.out.println();
+            processDecision(choice);
+        }
+    }   
+
+
+    // Handles the player's decision based on their input
+    private void processDecision(String decision) {
+        if (decision.equalsIgnoreCase("stand")) {
+            System.out.println("You chose to stand");
+            didWin();
+        } else if (decision.equalsIgnoreCase("hit")) {
+            System.out.println("You chose to hit");
+            playerHand.add(deck.drawCard());
+            System.out.println("You get a " + playerHand.get(playerHand.size() - 1).getRank() + " of " + playerHand.get(playerHand.size() - 1).getSuit());
+            System.out.println("Your total is now " + handSum(playerHand) + ".");
+            hitOrStand();
+        } else if (decision.equalsIgnoreCase("double down") && isBalanceEnough(currentBet * 2)) {
+            playerHand.add(deck.drawCard());
+            currentBet *= 2;
+        } else {
+            System.out.println("Please enter a valid response.");
+        }
+    }
+
+    // Places the player's bet
+    private void bets() {
+        currentBet = 0;
+        boolean placedBet = false;
+        pause(mediumPauseLength);
+        System.out.println("You have $" + chips);
+        while ((currentBet <= 0 || !(chips <= currentBet)) && !placedBet) {
+            pause(shortPauseLength);
+            System.out.print("What is your bet? $");
+            try {
+                String bet = getInput();
+                currentBet = Integer.parseInt(bet);
+                if (isBalanceEnough(currentBet) && currentBet > 0) {
+                    chips -= currentBet;
+                    pause(shortPauseLength);
+                    System.out.println("You have $" + chips + " left.");
+                    pause(shortPauseLength);
+                    System.out.println();
+                    placedBet = true;
+                } else {
+                    System.out.println("Invalid bet amount. Please try again.");
+                    pause(shortPauseLength);
                     System.out.println();
                 }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Enter a valid amount.");
+                pause(shortPauseLength);
+                System.out.println();
+                currentBet = 0;
             }
-            if (splitHappened && gravy) {
-                for (int i = 0; i < numHands; i++) {
-                    System.out.println("Hand " + (i + 1) + " with bet $" + handBets.get(i));
-
-                    hitOrStandSplit(varArray);
-                    // Add additional handling for hit, stand, or double down for each hand
-                    // Make sure you call the appropriate methods based on each hand's state
-                }
-            } 
+            System.out.println();
         }
     }
 
-//  =====================================================================================================
-    private void bets() {
-        int currentBet = 0;
-        System.out.println("You have $" + chips);
-        while (currentBet <= 0) {
-            System.out.print("What is your bet? $");
-                try {
-                    String bet = getInput();  // Read user input
-                    currentBet = Integer.parseInt(bet);
-                    if(isBalanceEnough(currentBet) && currentBet > 0){
-                        System.out.println("You have $" + chips + " left.");
-                }// End of if statement
-                else if (currentBet <= 0) {
-                    System.out.println("Time is not on your side, you must place a bet or face death.");
-                }
-            }// End of try() 
-            catch (NumberFormatException e) {
-                System.out.println("Invalid Bet, enter a valid amount. Try something funny like this again and you shall swim with the fishes");
-                currentBet = 0;
-            }// End of catch()
-        }
-        
-    }// End of bets()
-
+    // Checks if the player has enough balance for a bet
     public boolean isBalanceEnough(int wager) {
         if (wager <= chips) {
-            chips -= wager;
             return true;
-        }// End of if statement
-        else {
+        } else {
             return false;
-        }// End of else statement
-    }// End of isBalanceEnough()
-//  =====================================================================================================
-        private void insurance() { // Insurance only happens if dealer is showing an Ace
-        int insuranceBet = 0;
+        }
+    }
+
+    // Handles insurance side bets
+    private int insuranceBet = 0;
+    private boolean insurancePlaced = false;
+    private void insurance() {
         boolean validResponse = false;
-        if (getDealerCard().getRank().equals("Ace")){ //if dealer is showing an Ace
-            System.out.println("Dealer has an Ace showing, would you like to side bet insurance? Payout is 3 to 1");
-        }// End of if statement
-        while (!validResponse){
-            String insuranceDecision = getInput();
-            if (insuranceDecision.toLowerCase().equals("yes")){
-                try {
-                    System.out.print("What is your insurance bet? $");
-                    String bet = getInput();
-                    insuranceBet = Integer.parseInt(bet);
-                    if (isBalanceEnough(insuranceBet)) {
-                        System.out.println("Your balance is now $" + chips);
-                        System.out.println();
-                        validResponse = true;
-                    }// End of if statement #2
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid Bet, enter a valid amount.");
-                }  
-            }// End of if statement #1
-            else if (insuranceDecision.toLowerCase().equals("no")) {
-                System.out.println("You chose not to place an insurance bet.");
-                System.out.println();
-                validResponse = true;
-            }// End of else-if statement
-            else {
-                System.out.println("Please enter a yes or a no.");
-                System.out.println();
-            }// End of else statement
-        }// End of while loop
-    }// End of insurance()
-//  =====================================================================================================
-    private void split() {
-        if (splitHappened) {
-            preformSplit(2);
-            splitHappened = false;
-        }// End of if statement
-        else {
-            preformSplit(0);
-            preformSplit(1);
-        }// End of else statement
-    }// End of split()
+        if (getDealerCard().getRank().equalsIgnoreCase("Ace")) {
+            System.out.println("Dealer has an Ace showing. Would you like to place an insurance bet? Payout is 3 to 1.");
+            pause(mediumPauseLength);
+            System.out.println("You can place between $0-$" + currentBet);
+            pause(shortPauseLength);
+            System.out.print("Enter your insurance bet: $");
+            try {
+                insuranceBet = Integer.parseInt(getInput());
+                if (isBalanceEnough(insuranceBet) && insuranceBet > 0 && insuranceBet <= currentBet) {
+                    System.out.println("Your balance is now $" + chips);
+                    insurancePlaced = true;
+                    validResponse = true;
+                }   else if (!isBalanceEnough(insuranceBet)) {
+                    System.out.println("Your balance is too low.");
+                }   else if (insuranceBet == 0) {
+                    System.out.println("You chose to not place an insurance bet");
+                    validResponse = true;
+                }   else if (insuranceBet > currentBet) {
+                    System.out.println("The maximum insurance bet is your current bet. $" + currentBet);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Enter a valid amount.");
+            }
+        }
+    }
 
-    private void preformSplit(int handIndex) {
-        ArrayList <Card> splitHand = new ArrayList<>();
-        splitHand.add(playerHand.get(handIndex));
-        splitHand.add(deck.drawCard());
+    // ============================
+    // DEALER HAND LOGIC
+    // ============================
 
-        System.out.println("Split " + (handIndex + 1) + ":");
-        System.out.println(splitHand.get(0).getRank() + " of " + splitHand.get(0).getRank());
-        System.out.println(splitHand.get(1).getRank() + " of " + splitHand.get(1).getRank());
+    private ArrayList<Card> dealerHand;
 
-        hitOrStand(splitHand);
-    }// End of preformSplit()
-
-// =======================================================================================================================================================
-//              DEALER HAND
-// =======================================================================================================================================================
-    public ArrayList<Card> dealerHand;    
-    public void dealerHand() {
+    // Initializes the dealer's hand
+    private void dealerHand() {
         dealerHand = new ArrayList<>();
+    }
+
+    private void showDealerHand() {
         System.out.println();
+        pause(shortPauseLength);
+        System.out.println("   [Dealers hand]");
+        pause(shortPauseLength);
         System.out.println(dealerHand.get(0).getRank() + " of " + dealerHand.get(0).getSuit());
+        pause(shortPauseLength);
         System.out.println("Hidden Card");
+        pause(shortPauseLength);
+        System.out.println();
     }
 
+    // Handles the dealer's decisions to hit or stand
     private void dealerHitOrStand() {
-        int tempTotal = 0;
-        for (int i = 0; i < dealerHand.size(); i++) {
-            tempTotal += dealerHand.get(i).cardValue();
+        System.out.println();
+        System.out.println("Dealer shows his second card.");
+        System.out.println(dealerHand.get(0).getRank() + " of " + dealerHand.get(0).getSuit());
+        System.out.println(dealerHand.get(1).getRank() + " of " + dealerHand.get(1).getSuit());
+        System.out.println("Dealer's total: $" + (dealerHand.get(0).getRank() + dealerHand.get(1).getRank()));
+        
+        int total = 0;
+        for (Card card : dealerHand) {
+            int cardValue = card.cardValue();
+            total += cardValue;
         }
-        if (tempTotal < 17) {
+        
+        while (total < 17) {
+            System.out.println("The dealer hits");
             dealerHand.add(deck.drawCard());
-        }
+            System.out.println("And gets a " + dealerHand.get(dealerHand.size()).getRank() + " of " + dealerHand.get(dealerHand.size()).getSuit());
+            total = 0;
+            for (Card card : dealerHand) {
+                int cardValue = card.cardValue();
+                total += cardValue;
+            }
+        } 
     }
 
+    // Returns the dealer's visible card
     private Card getDealerCard() {
         return dealerHand.get(0);
     }
-
-
-
-// =======================================================================================================================================================
-//              DEALER HAND
-// =======================================================================================================================================================
-    // public ArrayList<Card> deck;
-
-    // public void Deck() {
-    //     deck = new ArrayList<>();
-    //     rand = new Random();
-    //     initializeDeck();
-    //     shuffleDeck();
-    // }
-
-    // public void initializeDeck() {
-    //     deck.clear();
-    //     String[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"};
-    //     String[] suits = {"Hearts", "Diamonds", "Spades", "Clubs"};
-    //     for (String suit : suits) {
-    //         for (String rank : ranks) {
-    //             deck.add(new Card(rank, suit));
-    //         }
-    //     }
-    // }
-
-    // public void shuffleDeck() {
-    //     Collections.shuffle(deck);
-    // }
-
-    // public Card drawCard() {
-    //     Card temp = deck.get(0);
-    //     deck.remove(0);
-    //     return temp;
-    // }
-}//End of BlackjackGame
+}
