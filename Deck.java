@@ -8,19 +8,7 @@ public class Deck {
     public Deck() {
         deck = new ArrayList<>();
         rand = new Random();
-        initializeDeck();
         shuffleDeck();
-    }
-
-    private void initializeDeck() {
-        deck.clear();
-        String[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"};
-        String[] suits = {"Hearts", "Diamonds", "Spades", "Clubs"};
-        for (String suit : suits) {
-            for (String rank : ranks) {
-                deck.add(new Card(rank, suit));
-            }
-        }
     }
 
     public void shuffleDeck() {
